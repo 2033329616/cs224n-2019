@@ -100,7 +100,7 @@ vec('Montreal Canadiens') - vec('Montreal') + vec('Toronto') => ('Toronto Maple 
 将所有单词放到二叉树的节点上，不去优化输出的词向量而是优化各个节点的向量，模型复杂度$log_2(V)$，$V$是字典大小
 
 单词为$w$，$n(w,j)$表示从根节点到叶子节点$w$路径中第$j\text{-}th$个节点，$L(w)$是路径的长度，$ch(n)$是父节点固定的一个子节点(例如左节点)，$[x]$在$x$为真时是1，否则为-1，
-$p(w_O\mid w_I)$的公式定义如下：
+$p(w_O \mid w_I)$的公式定义如下：
 
 $$
 p\left(w | w_{I}\right)=\prod_{j=1}^{L(w)-1} \sigma\left([n(w, j+1)=\operatorname{ch}(n(w, j))] \cdot v_{n(w, j)}^{\prime}{v_{w_{I}}} \right)
