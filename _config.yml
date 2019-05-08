@@ -1,5 +1,2 @@
 theme: jekyll-theme-time-machine
-markdown: kramdown
-# kramdown:
-#   math_engine: mathjax
-#   syntax_highlighter: rouge
+# markdown: kramdown
