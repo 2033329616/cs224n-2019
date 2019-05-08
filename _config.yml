@@ -1,9 +1,5 @@
 theme: jekyll-theme-cayman
+markdown: kramdown
 # kramdown:
 #   math_engine: mathjax
 #   syntax_highlighter: rouge
-mathjax:
-  enable: true
-  per_page: true
-  #cdn: //cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML
-  cdn: //cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML
