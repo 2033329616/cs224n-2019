@@ -1,21 +1,8 @@
-# 论文笔记
-
-2019.05.06
+# 词向量(Word Vector)
 
 [TOC]
 
 ---
-<head>
-    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
-    <script type="text/x-mathjax-config">
-        MathJax.Hub.Config({
-            tex2jax: {
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
-            inlineMath: [['$','$']]
-            }
-        });
-    </script>
-</head>
 
 ## 1. Efficient Estimation of Word Representations in Vector Space
 
@@ -23,13 +10,13 @@
 
 结果：imporvements in accuracy at much lower computational cost
 
-简单模型在大量数据集上训练的效果比复杂模型在少量数据集上的效果好$\Rightarrow$改进模型
+简单模型在大量数据集上训练的效果比复杂模型在少量数据集上的效果好$\rightarrow$改进模型
 
 quality of the vector representations
 1. similar words tends to be close to each other
 2. words have **multiple degrees of similarity**(多种程度的相似性), eg. nouns can have multiple word endings
 
-similarity of word representations goes beyond simple syntactic regularities$\Rightarrow$词向量更加注重语义
+similarity of word representations goes beyond simple syntactic regularities$\rightarrow$词向量更加注重语义
 
 **previous work**：
 1.paper:*A neural probabilistic language model*
@@ -100,7 +87,7 @@ vec('Montreal Canadiens') - vec('Montreal') + vec('Toronto') => ('Toronto Maple 
 ### 1. Hierarchical Softmax
 将所有单词放到二叉树的节点上，不去优化输出的词向量而是优化各个节点的向量，模型复杂度$log_2(V)$，$V$是字典大小
 
-单词为$w$，$n(w,j)$表示从根节点到叶子节点$w$路径中第$j-th$个节点，$L(w)$是路径的长度，$ch(n)$是父节点固定的一个子节点(例如左节点)，$[x]$在$x$为真时是1，否则为-1，$p(w_O|w_I)$的公式定义如下：
+单词为$w$，$n(w,j)$表示从根节点到叶子节点$w$路径中第$j\text{-}th$个节点，$L(w)$是路径的长度，$ch(n)$是父节点固定的一个子节点(例如左节点)，$[x]$在$x$为真时是1，否则为-1，$p(w_O|w_I)$的公式定义如下：
 
 $$
 p\left(w | w_{I}\right)=\prod_{j=1}^{L(w)-1} \sigma\left([n(w, j+1)=\operatorname{ch}(n(w, j))] \cdot v_{n(w, j)}^{\prime}{v_{w_{I}}} \right)
@@ -179,5 +166,5 @@ $count(w_i)$表示单词$w_i$出现的次数，$count(w_i,w_j)$表示两个单�
 
 **总结**：
 - 对高频词的subsampling可以**提升训练速度**，并且提高**低频词**的词向量的表示能力。论文中表示高频词和其他词共现的频率很高，从反方向表示就是高频词的向量表示经过很多样本训练后不会显著改变(the vector representations of frequent words do not change significantly after training on several million examples)，因此通过子采样随机抛弃一些高频词，可以使低频词和高频词实现一些平衡，不但减少了训练样本而且提高了低频词的表示能力
-- 负采样提升训练速度，而且提高了**高频词**和**低维度**的词向量表示能力，$\color{red}{为什么会对高频词和低纬度向量好？}$
+- 负采样提升训练速度，而且提高了**高频词**和**低维度**的词向量表示能力，$\color{red}{为什么会对高频词和低纬度向量好？}$是因为高频词采样的次数多，所以更新词向量的次数多，所以高频词的词向量好？
 - hierarchical softmax(分层softmax)对**低频词**的效果好，参考[关于word2vec，我有话要说](https://zhuanlan.zhihu.com/p/29364112)，CBOW是基于上下文词汇预测中心词，虽然某些单词词频较低，但它会收到上下文的影响，上下文的词向量效果很好的话，也会提升作为中心词的低频词的词向量的表示能力
