@@ -287,12 +287,7 @@ pre[data-line] .line-highlight[data-end]:after {
 
     <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
     <script type="text/x-mathjax-config">
-        MathJax.Hub.Config({
-            tex2jax: {
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
-            inlineMath: [['$','$']]
-            }
-        });
+      MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
     </script>
 
 <h2 class="mume-header" id="1-efficient-estimation-of-word-representations-in-vector-space">1. Efficient Estimation of Word Representations in Vector Space</h2>
