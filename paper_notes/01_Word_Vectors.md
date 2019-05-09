@@ -36,7 +36,7 @@ feedforward neural network + linear projection + non-linear => **learn jointly**
 2.paper:*Language Modeling for Speech Recognition in Czech*
 neural network with a single hidden layer to **only** learn the word vectors
 
-在使用嵌入矩阵W提取one-hot对应的词向量时，虽然是可以通过查表法得到第$i$个字典位置词的词向量，但实际计算时使用1乘了$d$次，得到$d$维度的词向量
+在使用嵌入矩阵W提取one-hot对应的词向量时，虽然是可以通过查表法得到第$i$个字典位置词的词向量，但实际计算时使用1乘了$d$次，得到$d$维度的词向量，计算方法如下：
 
 $$ [0,0,\dots,1,0]_V \cdot 
 \left[
@@ -119,7 +119,7 @@ $$
 在Noise Contrastive Estimation(NCE)模型中，好的模型可以有效的区分噪声和数据，所以这里模型的优化目标使，正样本属于数据集中的概率更大，负样本属于噪声分布的概率更大，样本的分类概率更接近真实结果，用极大似然概率的乘积来描述，取对数得下面结果：
 
 $$
-\log \sigma({v_{w_O}^{\prime}}^{\top} v_{w_I})+\sum_{i=1}^{k} \mathbb{E}_{w_i \sim P_{n}(w)}\left[ \log \sigma ({v_{w_i}^{\prime}}^{\top} v_{w_I}) \right]
+\log \sigma({v_{w_O}^{\prime}}^{\top} v_{w_I})+\sum_{i=1}^{k} \mathbb{E}_{w_i \sim P_{n}(w)}\left[ \log \sigma (-{v_{w_i}^{\prime}}^{\top} v_{w_I}) \right]
 $$
 
 $w_i$是从噪声分布采样得到的负样本，$v_{w_I}$是中心词的词向量，$v_{w_O}^{\prime}$是该中心词的上下文的词向量，而$v_{w_i}^{\prime}$是负样本的词向量，在小数据集中$k$取5-20，大数据集中$k$取2-5
