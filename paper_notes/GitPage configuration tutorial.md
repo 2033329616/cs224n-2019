@@ -2,23 +2,13 @@
 ## 1.首先配置github的仓库
 打开仓库的settings选项，再找到GitHub Pages设置中的Source，然后设置为master branch，结果如下图所示：
 
-<img src='imgs/config_gitpage.jpg' weight='70%' height='70%'>
+<img src='imgs/config_gitpage.jpg' weight='60%' height='60%'>
 
 ## 2.设置_config.yml文件
 通常在GitHub Pages使用change theme后会自动在主目录下生成该文件，如果没有该文件，手动在仓库的主目录创建一个，填写下面的内容：
 ```markdown
 theme: jekyll-theme-cayman
 markdown: kramdown
-```
-
-下面的公式test一下
-
-```mathjax
-$$ \sum_a^{b} $$
-```
-
-```makrdown
-$$ \sum_a^{b} $$
 ```
 
 ### 3. 在markdown最上面插入\<head>声明
@@ -46,3 +36,5 @@ $$ \sum_a^{b} $$
 https://user_name.github.io/repository_name/blog_name.html
 ```
 注意当html文件没有在根目录时，只要添加html的完整路径就可以解析
+
+参考：[让GitHub Page支持Latex公式](https://zhuanlan.zhihu.com/p/36302775)
