@@ -245,3 +245,39 @@ SVD中使用PPMI加偏置使其性能变差；直接使用分解后的奇异向�
 - 多使用context distribution smoothing来修改PMI来提高性能
 - 对SVD的奇异向量要加权，即使用0或0.5的指数
 - SGNS在大多任务中表现有鲁棒性robust，$\color{red}{这里说它的速度最快，但GloVe论文说自己快，谁对？}$
+
+## 3. Evaluation methods for unsupervised word embeddings
+
+1. word relatedness (单词相似性)
+2. coherence (一致性)
+3. downstream performance (下游任务的表现)
+
+研究词嵌入的评价方法
+Query inventory：选择不同的单词对会影响评价的结果
+
+### 1. Intrinsic evaluation：
+
+#### 1. word relatedness
+
+(1) absolute intrinsic evaluation(绝对的内部评估)
+
+- Relatedness (计算余弦相似度)
+- Analogy (king的例子)
+- Categorization (聚类后看类别的纯度)
+- Selectional preference (people eat用法对，eat people不对)
+
+CBOW比大部分模型效果好(包括GloVe)
+
+(2) comparative intrinsic evaluation
+首先根据k个不同的词嵌入算法对query单词进行相似性匹配，每个算法得到一个最近邻的单词，然后将这些词放到query的可选项中，最后让人来判断从这k个选项中最相近的一个，每种词嵌入算法的最终的评价指标通过其对应的被选词的次数除以总的选择次数得到。
+
+>语义相关的词在词嵌入空间是否离得很近是relatedness节的主题
+
+#### 2. coherence
+
+词嵌入空间的相近的词应该是相关的(mutually related)
+在词嵌入空间相近的词组合中，放入一个外来词，然后人工挑选这个词，挑中这个词次数除以挑选的总次数为查准率，查准率高的组合对应的词嵌入算法表现更好
+
+### 2. extrinsic evaluation
+
+不同的下游任务需要使用不同的词嵌入才能提高性能，内部评价好的词向量用在特点的任务表现不一定好，这时以任务为主导来评价词向量更合适
