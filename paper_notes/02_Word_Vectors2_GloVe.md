@@ -156,3 +156,92 @@ $$
 2. 使用最小二乘的目标函数来衡量两个分布的距离，省去了交叉熵中归一化的巨大的计算量
 3. 为共现单词安排不同的权重，虽然这个权重没有归一化，但值属于[0,1]，权重表示上下文中每个单词对中心词的影响是不同的，有点attention的感觉，需要注意的是当两个单词不共现时权重为0，即不计入最终的损失。
 4. 在共现矩阵$X$中，每个单词属于中心词也属于上下文，所以该矩阵是对称的，模型需要满足$\color{red}{同态性}$，交换两个变量对结果不会产生影响。
+
+## 2. Improving Distributional Similarity with Lessons Learned from Word Embeddings
+
+核心观点：**word embeddings词向量在word similarity和analogy任务上比count-based的算法表现更好，这是在特定的任务和超参数的调优上导致的，而不是词嵌入算法本身的优势，在count-based算法上也进行调优，可以在某些任务上超过词嵌入的性能**。
+
+测试任务：word similarity + analogy detection
+
+已有方法：
+|class|method1|method2|
+|-|-|-|
+|count-based|explicit PPMI matrix(正点互信息矩阵)|SVD factorization(共现矩阵奇异值分解)|
+|prediction-based|SGNS(skip-gram负采样)|GloVe(单词共现概率比值)|
+
+符号声明：
+>$w \in V_W$表示中心词
+$c \in V_C$表示上下文
+$V_W$和$V_C$表示中心词和上下文的字典
+$D$表示中心词-上下文对(word-context pairs)
+$\#(w,c)$表示该word-context对出现的次数
+$\#(w) = \sum_{c^{\prime} \in V_{C}} \#\left(w, c^{\prime}\right)$是$c$出现在$D$中的次数
+$\#(c) = \sum_{w^{\prime} \in V_{W}} \#\left(w^{\prime}, c\right)$是$w$出现在$D$中的次数
+
+所有为了更好地计算相似度而向量**归一化**
+#### (1) PMI点互信息
+传统方法中定义稀疏矩阵$M$，也称为共现矩阵，行是中心词$w$，列时上下文$c$，$M_{ij}$表示了单词$w_i$和上下文$c_j$的关系，使用点互信息pointwise mutual information(PMI)来表示共现的关系。
+PMI定义为$w$和$c$的**联合概率与边缘概率的比值**，如下：
+$$
+PMI(w, c)=\log \frac{\hat{P}(w, c)}{\hat{P}(w) \hat{P}(c)}=\log \frac{\#(w, c) \cdot|D|}{\#(w) : \#(c)} \tag{1}
+$$
+
+当共现为0时直接设置$PMI(w,c)=0$得到矩阵$M_0^{PMI}$，也可以使用positive PMI(PPMI)，将PMI为负的值都取0得到$M^{PPMI}$，但这两个矩阵都在低频词上存在偏置，低频词使式子(1)中分母很小，从而增大PMI值。
+
+#### (2) 奇异值分解(Singular Value Decomposition, SVD)
+
+将矩阵$M$进行分解，只保留前$d$个奇异值：
+$$
+M_{d}=U_{d} \cdot \Sigma_{d} \cdot V_{d}^{\top} \tag{2}
+$$
+词向量和上下文如下：
+$$
+W^{\mathrm{SVD}}=U_{d} \cdot \Sigma_{d} \quad C^{\mathrm{SVD}}=V_{d} \tag{3}
+$$
+$W=U_{d} \cdot \Sigma_{d}$和上述$M_d$各自行的**内积是相同的**，对PPMI矩阵进行SVD分解也可以得到词向量。
+
+#### (3) Skip-Grams with Negative Sampling (SGNS)
+
+SGNS可以看做**隐式分解PMI**，但加了个偏置log(k)
+$$
+W \cdot C^{\top}=M^{\mathrm{PMI}}-\log k \tag{4}
+$$
+
+#### (4) GloVe
+
+词向量的优化目标：
+$$
+\vec{w} \cdot \vec{c}+b_{w}+b_{c}=\log (\#(w, c)) \quad \forall(w, c) \in D \tag{5}
+$$
+GloVe 在$b_w=log\#(w)$和$b_c=log\#(c)$时， 也是在**分解PMI**，但偏置为log(D)，D为单词对(w,c)的个数
+$$
+M^{\log (\#(w, c))} \approx W \cdot C^{\top}+\overrightarrow{b^{\vec{w}}}+\overrightarrow{b^{c}} \tag{6}
+$$
+
+GloVe使用调和函数来给上下文加权，word2vec使用与中心词的距离为上下文加权(dynamic context window, dyn)
+
+word2vec 子采样在生成词对前，这样相当于增加了某些单词的滑窗大小，可以看到L大小外的单词，这称为dirty，如果是在生成词对后再扔掉高频词，这样为clean，但两种方法效果差不多
+
+负采样使用平滑的**一元模型**，使用3/4作为指数，这个提高了稀有词汇c(低频词)的采样概率，同时减少与稀有词会共现的中心词W的PMI？
+
+输出词向量：相加或只使用一个，性能表现与具体的方法有关
+> 有时选择合适的超参数比选择合适算法重要,embiddings方法不一定一致的比count-based的方法好，调节好超参数甚至比在更多的数据上得到的效果好
+
+GloVe竟然没有SGNS(skip-gram + negative sampling)效果好；SGNS比PPMI的在类比analogy任务上好
+
+使用相似性乘积比相似性求和好
+
+结合上下文窗口的每个单词可以得到更好的上下文词向量，但实践中没有实现，有待研究
+
+SVD中使用PPMI加偏置使其性能变差；直接使用分解后的奇异向量会使效果变差，即使对奇异向量加权可以提高性能
+
+总结：
+
+1. PPMI与SVD方法使用小的上下文滑窗，SGNS使用多个负样本效果更好
+2. SVD方法使用两个向量和效果比只使用一个的差
+3. 上下文分布平滑(context distribution smoothing)可以频繁使用，0.75的指数在大多任务中表现良好，在PPMI上的提升最显著，因为它减少了在稀有词汇(低频词)的相对影响
+4. 实践总结
+
+- 多使用context distribution smoothing来修改PMI来提高性能
+- 对SVD的奇异向量要加权，即使用0或0.5的指数
+- SGNS在大多任务中表现有鲁棒性robust，$\color{red}{这里说它的速度最快，但GloVe论文说自己快，谁对？}$
