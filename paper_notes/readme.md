@@ -9,4 +9,5 @@
 #### 2. [GloVe and Word Senses](https://2033329616.github.io/cs224n-2019/paper_notes/02_Word_Vectors2_GloVe.html)
 
 - GloVe: Global Vectors for Word Representation (GloVe原论文)
-
+- Improving Distributional Similarity with Lessons Learned from Word Embeddings (count-based与embeddings方法比较实验)
+- Evaluation methods for unsupervised word embeddings (intrinsic and extrinsic evaluation评价方法)
