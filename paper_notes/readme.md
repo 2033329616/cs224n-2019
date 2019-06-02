@@ -11,3 +11,11 @@
 - GloVe: Global Vectors for Word Representation (GloVe原论文)
 - Improving Distributional Similarity with Lessons Learned from Word Embeddings (count-based与embeddings方法比较实验)
 - Evaluation methods for unsupervised word embeddings (intrinsic and extrinsic evaluation评价方法)
+
+#### 3. [Natural Language Processing](https://2033329616.github.io/cs224n-2019/paper_notes/03_Natural_Language_Processing.html)
+
+- Natural Language Processing (Almost) from Scratch (早期将神经网络用于自然语言处理)
+
+#### 4. [Backpropagation and Derivatives](https://2033329616.github.io/cs224n-2019/paper_notes/04_backpropagation_derivatives.html)
+
+- Learning Representations by Backpropagating Errors (1986提出反向传播的论文)

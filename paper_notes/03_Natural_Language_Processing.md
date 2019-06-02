@@ -18,11 +18,11 @@
 
 ## 1. Natural Language Processing (Almost) from Scratch
 
-本文干什么：定义了**统一的神经网络架构**和学习算法用到part-of-speech tagging, chunking, named entity recognition, and semantic role labeling等NLP任务中。
+本文干什么：定义了**统一的神经网络架构**和学习算法用到part-of-speech tagging, chunking, named entity recognition, and semantic role labeling等NLP任务中，从大量无标记数据中学习单词的表示(词嵌入)，然后用到其他任务中。
 
 使用单一的学习系统来发现足够的中间表示
 将中间表示迁移到其他任务中可以实现好的效果，而中间表示是在大量的未标注的数据集上训练得到的
-almost from scratch => 减少对NLP先验知识的依赖
+>almost from scratch => 减少对NLP先验知识的依赖
 
 ### 1. Benchmark Tasks (基准任务)
 
@@ -68,8 +68,13 @@ $$
 多任务学习Multi-task learning(MTL)利用了迁移学习的观点，将多个任务联合训练来增加泛化能力
 
 基准任务中引入其他方法提升性能
->1.在POS词性标注任务中，单词后缀在西方的语言中对句法预测有帮助
-2.NER任务中引入大量的实体名称词典有帮助
-3.在CHUNK和NER中还会引入POS的词性信息，同样在SRL中引入CHUNK信息，这是一种级联(cascading)或迁移的思想
-4.模型集成(ensembles)集成多个分类器，voting比average效果好
-5.句法解析树(syntastic parsing)在SRL语义角色标注中起作用
+
+1. 在POS词性标注任务中，单词后缀在西方的语言中对句法预测有帮助
+2. NER任务中引入大量的实体名称词典有帮助
+3. 在CHUNK和NER中还会引入POS的词性信息，同样在SRL中引入CHUNK信息，这是一种级联(cascading)或迁移的思想
+4. 模型集成(ensembles)集成多个分类器，voting比average效果好
+5. 句法解析树(syntastic parsing)在SRL语义角色标注中起作用
+
+单词表示更有可能从n-gram语言模型中学到而不是从纯粹的连续的语言模型中学到(word representations are perhaps more commonly inferred from n-gram language modeling rather than purely continuous language models. )
+
+
