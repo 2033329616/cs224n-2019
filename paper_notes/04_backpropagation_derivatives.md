@@ -94,7 +94,7 @@ $$
 
 - 函数：$f : \mathbb{R}^{N} \rightarrow \mathbb{R}^{M}$
 
-雅可比矩阵(Jacobian)的维度为$output \times input $，矩阵$(i,j)$位置的元素表示第$j$个输入与第$i$个输出间改变量的比率，可表示为$\frac{\partial y_i}{\partial x_j}$：
+雅可比矩阵(Jacobian)的维度为$M \times N $，矩阵$(i,j)$位置的元素表示第$j$个输入与第$i$个输出间改变量的比率，可表示为$\frac{\partial y_i}{\partial x_j}$：
 $$
 \frac{\partial y}{\partial x}=\left(\begin{array}{ccc}{\frac{\partial y_{1}}{\partial x_{1}}} & {\cdots} & {\frac{\partial y_{1}}{\partial x_{N}}} \\ {\vdots} & {\ddots} & {\vdots} \\ {\frac{\partial y_{M}}{\partial x_{1}}} & {\cdots} & {\frac{\partial y_{M}}{\partial x_{N}}}\end{array}\right) \tag{7}
 $$
@@ -106,3 +106,43 @@ $$
 
 - 函数：$f : \mathbb{R}^{N_{1} \times \cdots \times N_{D_{x}}} \rightarrow \mathbb{R}^{M_{1} \times \cdots \times M_{D_{y}}}$
 
+广义雅可比矩阵(generalized Jacobian)的维度是$\left(M_{1} \times \cdots \times M_{D_{y}}\right) \times\left(N_{1} \times \cdots \times N_{D_{x}}\right)$，同样行为输出，列为输入，每一个元素表示x与y直接改变的相对比率
+
+同理公式(3)和(5)也成立，只是加号右边变为广义的矩阵和向量的乘积，其中$\frac{\partial y}{\partial x}$是广义的矩阵，维度为$\left(M_{1} \times \cdots \times M_{D_{y}}\right) \times\left(N_{1} \times \cdots \times N_{D_{x}}\right)$和$\Delta x$是广义的向量，维度为$N_{1} \times \cdots \times N_{D_{x}}$
+
+广义矩阵和向量积如下：
+$$
+\left(\frac{\partial y}{\partial x} \Delta x\right)_{j}=\sum_{i}\left(\frac{\partial y}{\partial x}\right)_{i, j}(\Delta x)_{i}=\left(\frac{\partial y}{\partial x}\right)_{j,:} \cdot \Delta x \tag{8}
+$$
+其中$\frac{\partial y}{\partial x}$的每一行是一个与$x$同维度的向量，上面的公式可以看做广义矩阵的一行与广义列向量间的内积
+
+### 2. Backpropagation with Tensors
+
+注意：损失函数一定是**标量**(scalar)
+
+通过链式法则计算下面式子：
+
+$$
+\frac{\partial L}{\partial x}=\frac{\partial L}{\partial y} \frac{\partial y}{\partial x} \quad \frac{\partial L}{\partial w}=\frac{\partial L}{\partial y} \frac{\partial y}{\partial w} \tag{9}
+$$
+
+>设$y=f(x, w)=x w$，
+$x$的维度$N \times D$，
+$w$的维度$D \times M$，
+$y$的维度为$N \times M$，
+
+(1) $L$对$x$的梯度为：
+$$
+\frac{\partial L}{\partial x}=\frac{\partial L}{\partial y} w^T \tag{10}
+$$
+
+$\frac{\partial L}{\partial y}$的维度为$N \times M$，乘以$w^T$的后结果为$N \times D$，**注意$L$对$x$的梯度的维度与$x$的维度一致**
+
+(2) $L$对$w$的梯度为：
+$$
+\frac{\partial L}{\partial w}=x^T \frac{\partial L}{\partial y}  \tag{11}
+$$
+
+$\frac{\partial L}{\partial y}$的维度为$N \times M$，左乘$x^T$的结果为$D \times M$，**注意$L$对$w$的梯度的维度与$w$的维度一致**
+
+总结：不用刻意计算梯度，只需将梯度和变量的维度对应好一般可以得到正确的结果
