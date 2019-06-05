@@ -19,3 +19,5 @@
 #### 4. [Backpropagation and Derivatives](https://2033329616.github.io/cs224n-2019/paper_notes/04_backpropagation_derivatives.html)
 
 - Learning Representations by Backpropagating Errors (1986提出反向传播的论文)
+- Derivatives, Backpropagation, and Vectorization (介绍微分和反向传播的笔记)
+
