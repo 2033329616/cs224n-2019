@@ -9,6 +9,7 @@ def normalizeRows(x):
     unit length.
     """
     N = x.shape[0]
+    # x /= np.linalg.norm(arr, axis=1, keepdims=True) + 1e-30  功能同下
     x /= np.sqrt(np.sum(x**2, axis=1)).reshape((N,1)) + 1e-30
     return x
 
@@ -27,11 +28,11 @@ def softmax(x):
     if len(x.shape) > 1:
         # Matrix
         tmp = np.max(x, axis=1)
-        x -= tmp.reshape((x.shape[0], 1))
+        x -= tmp.reshape((x.shape[0], 1))         # 每行减去最大值，为了数值稳定，keepdim可以保留维度信息，不用reshape
         x = np.exp(x)
         tmp = np.sum(x, axis=1)
-        x /= tmp.reshape((x.shape[0], 1))
-    else:
+        x /= tmp.reshape((x.shape[0], 1))         # 每行内进行归一化
+    else:                                         # 一维度向量，所以单独处理
         # Vector
         tmp = np.max(x)
         x -= tmp
