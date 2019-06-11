@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import pickle
@@ -9,7 +8,8 @@ import random
 class StanfordSentiment:
     def __init__(self, path=None, tablesize = 1000000):
         if not path:
-            path = "utils/datasets/stanfordSentimentTreebank"
+            path_list = 'utils/datasets/stanfordSentimentTreebank'.split('/')
+            path = os.path.join(*path_list)         # "utils\\datasets\\stanfordSentimentTreebank"
 
         self.path = path
         self.tablesize = tablesize
@@ -51,7 +51,7 @@ class StanfordSentiment:
             return self._sentences
 
         sentences = []
-        with open(self.path + "/datasetSentences.txt", "r") as f:
+        with open(os.path.join(self.path, 'datasetSentences.txt'), "r") as f:
             first = True
             for line in f:
                 if first:

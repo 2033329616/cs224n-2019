@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# encoding:utf-8 
 
 # Save parameters every a few SGD iterations as fail-safe
 SAVE_PARAMS_EVERY = 5000
@@ -15,8 +15,8 @@ def load_saved_params():
     iteration start.
     """
     st = 0
-    for f in glob.glob("saved_params_*.npy"):
-        iter = int(op.splitext(op.basename(f))[0].split("_")[2])
+    for f in glob.glob("saved_params_*.npy"):                       # glob函数匹配类似的文件，返回路径
+        iter = int(op.splitext(op.basename(f))[0].split("_")[2])    # 获取*中对应的字符串
         if (iter > st):
             st = iter
 
@@ -35,7 +35,7 @@ def save_params(iter, params):
     params_file = "saved_params_%d.npy" % iter
     np.save(params_file, params)
     with open("saved_state_%d.pickle" % iter, "wb") as f:
-        pickle.dump(random.getstate(), f)
+        pickle.dump(random.getstate(), f)                     # 存储当前的状态
 
 
 def sgd(f, x0, step, iterations, postprocessing=None, useSaved=False,
@@ -67,16 +67,16 @@ def sgd(f, x0, step, iterations, postprocessing=None, useSaved=False,
         start_iter, oldx, state = load_saved_params()
         if start_iter > 0:
             x0 = oldx
-            step *= 0.5 ** (start_iter / ANNEAL_EVERY)
+            step *= 0.5 ** (start_iter / ANNEAL_EVERY)         # 学习率按0.5倍衰减
 
         if state:
-            random.setstate(state)
+            random.setstate(state)                             # 读取随机的状态
     else:
         start_iter = 0
 
     x = x0
 
-    if not postprocessing:
+    if not postprocessing:                                     # 不使用预处理
         postprocessing = lambda x: x
 
     exploss = None
@@ -86,10 +86,12 @@ def sgd(f, x0, step, iterations, postprocessing=None, useSaved=False,
 
         loss = None
         ### YOUR CODE HERE
-
+        x = postprocessing(x)                                   # 对x进行预处理
+        loss, grad = f(x)
+        x += -step * grad                                       # 使用梯度下降法更新词向量(参数)
         ### END YOUR CODE
 
-        x = postprocessing(x)
+        # x = postprocessing(x)
         if iter % PRINT_EVERY == 0:
             if not exploss:
                 exploss = loss
@@ -100,7 +102,7 @@ def sgd(f, x0, step, iterations, postprocessing=None, useSaved=False,
         if iter % SAVE_PARAMS_EVERY == 0 and useSaved:
             save_params(iter, x)
 
-        if iter % ANNEAL_EVERY == 0:
+        if iter % ANNEAL_EVERY == 0:         # 周期性衰减学习率，变为原来的0.5
             step *= 0.5
 
     return x

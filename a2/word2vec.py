@@ -172,15 +172,15 @@ def skipgram(currentCenterWord, windowSize, outsideWords, word2Ind,
 
     loss = 0.0
     centerWordVectors, outsideVectors = centerWordVectors.T, outsideVectors.T           # 取转置，为了与written的U和V对应 (d,V)
-    gradCenterVecs = np.zeros(centerWordVectors.shape)       # (d, V)
-    gradOutsideVectors = np.zeros(outsideVectors.shape)      # (d, V)
-    # gradOutsideVectors = np.zeros_like(outsideVectors)     # 也可以创建相同维度的零矩阵
+    gradCenterVecs = np.zeros(centerWordVectors.shape)                                  # (d, V)
+    gradOutsideVectors = np.zeros(outsideVectors.shape)                                 # (d, V)
+    # gradOutsideVectors = np.zeros_like(outsideVectors)                                # 也可以创建相同维度的零矩阵
 
     ### YOUR CODE HERE
     center_idx = word2Ind[currentCenterWord]
-    for outsideword in outsideWords:                         # 按照outsidewords遍历
+    for outsideword in outsideWords:                                                    # 按照outsidewords遍历
         outsideWordIdx = word2Ind[outsideword] 
-        centerWordVec = centerWordVectors[:, center_idx:center_idx+1]   # (d,1) 这里传入的是列向量
+        centerWordVec = centerWordVectors[:, center_idx:center_idx+1]                   # (d,1) 这里传入的是列向量
         
         # dataset        
         temp_loss, temp_centergrad, temp_outsidegrad = \
@@ -234,7 +234,7 @@ def word2vec_sgd_wrapper(word2vecModel, word2Ind, wordVectors, dataset,
 def test_word2vec():
     """ Test the two word2vec implementations, before running on Stanford Sentiment Treebank """
     # 元类的解释：https://stackoverflow.com/questions/39200612/python-type-function-for-dummy-type
-    dataset = type('dummy', (), {})()                 # 元类：创造类, dummy是名称，()无继承，{}无属性和方法
+    dataset = type('dummy', (), {})()                                    # 元类：创造类, dummy是名称，()无继承，{}无属性和方法
     def dummySampleTokenIdx():
         return random.randint(0, 4)
 

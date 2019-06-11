@@ -1,9 +1,10 @@
-#!/usr/bin/env python
+
 
 import random
 import numpy as np
 from utils.treebank import StanfordSentiment
 import matplotlib
+
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import time
@@ -33,6 +34,8 @@ random.seed(31415)
 np.random.seed(9265)
 
 startTime=time.time()
+# 前面的nWords对应中心词向量，使用均匀分布进行初始化，并进行归一化(为什么分母除嵌入维度？？？)
+# 后面的nWords对应上下文输出向量，使用全0进行初始化
 wordVectors = np.concatenate(
     ((np.random.rand(nWords, dimVectors) - 0.5) /
        dimVectors, np.zeros((nWords, dimVectors))),
