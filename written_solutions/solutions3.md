@@ -16,12 +16,12 @@
 
 (a) Adam Optimizer
 
-1. Adam中使用**momentum动量**机制，使梯度可以更好地更新
+i. Adam中使用**momentum动量**机制，使梯度可以更好地更新
 $$
 \begin{array}{l}{\mathbf{m} \leftarrow \beta_{1} \mathbf{m}+\left(1-\beta_{1}\right) \nabla_{\boldsymbol{\theta}} J_{\text { minibatch }}(\boldsymbol{\theta})} \\ {\boldsymbol{\theta} \leftarrow \boldsymbol{\theta}-\alpha \mathbf{m}}\end{array}\tag{1}
 $$
 在上面的式子中对梯度进行了滑动平均处理(可以理解为低通滤波器)，当$\beta_1=0$时表示完全抛弃旧的梯度信息，只使用新的梯度信息，当$\beta_1=1$时，只使用旧的梯度信息，将新的梯度信息完全抛弃，当该超参数在$(0,1)$时可以有效地控制旧梯度和新梯度的比值，**动量会利用先前的梯度信息跳过局部最小值**，从而更有效地影响最终参数的更新。
-1. Adam中使用**adaptive learning rates**来针对梯度动态地调整学习率
+ii. Adam中使用**adaptive learning rates**来针对梯度动态地调整学习率
 $$
 \begin{array}{l}{\mathbf{m} \leftarrow \beta_{1} \mathbf{m}+\left(1-\beta_{1}\right) \nabla_{\boldsymbol{\theta}} J_{\text { minibatch }}(\boldsymbol{\theta})} \\ {\mathbf{v} \leftarrow \beta_{2} \mathbf{v}+\left(1-\beta_{2}\right)\left(\nabla_{\boldsymbol{\theta}} J_{\text { minibatch }}(\boldsymbol{\theta}) \odot \nabla_{\boldsymbol{\theta}} J_{\text { minibatch }}(\boldsymbol{\theta})\right)} \\ {\boldsymbol{\theta} \leftarrow \boldsymbol{\theta}-\alpha \odot \mathbf{m} / \sqrt{\mathbf{v}}}\end{array} \tag{2}
 $$
@@ -35,7 +35,7 @@ $$
 $$
 其中$\mathbf{d} \in \{ 0, 1\}^{D_h}$，$p_{drop}$是$\mathbf{d}$为0的概率，$1-p_{drop}$是$\mathbf{d}$为1的概率
 
-1. 选择$\gamma$使$\mathbf{h}_{\mathbf{drop}}$的期望为$\mathbf{h}$
+i. 选择$\gamma$使$\mathbf{h}_{\mathbf{drop}}$的期望为$\mathbf{h}$
 离散型随机变量的期望：
 $$
 E_x=\sum_i^NP(x_i)*x_i \tag{3}
@@ -52,8 +52,8 @@ $$
 因此
 $$\gamma=\frac{1}{1-p_{drop}}\tag{5}$$
 使上述等式成立
-2. 为什么在测试时不是有dropout
-如果要在测试时使用dropout，那每次的测试结果就会不同，但模型应该具有一致性才行，所以为了不引入随机性，在测试时关闭dropout，但要保证**测试时模型输出的期望与训练时一致**，具体的做法是在测试阶段将输出进行缩放，或者在训练时将输出乘inverted dropout，这样测试时输出就不用改变了。
+ii. 为什么在测试时不是有dropout
+如果要在测试时使用dropout，那每次的测试结果就会不同，但模型应该具有一致性才行，所以为了不引入随机性，在测试时关闭dropout，但要保证**测试时模型输出的期望与训练时一致**，具体的做法是在测试阶段将输出进行缩放，或者在训练时将输出乘inverted dropout，这样测试时输出就不用改变了(对应于1中的$\gamma$)。
 
 ### 2. Neural Transition-Based Dependency Parsing
 
@@ -94,4 +94,34 @@ $$\gamma=\frac{1}{1-p_{drop}}\tag{5}$$
 
 (c) code
 
-(d) 
+(d) code
+
+(e) dev UAS:69.86  test UAS: 88.85
+
+(f) 判断例句中依存关系的错误
+有四种类型错误
+
+- Prepositional Phrase Attachment Error (介词短语附属错误)
+- Verb Phrase Attachment Error (动词短语附属错误)
+- Modifier Attachment Error (修饰词附属错误)
+- Coordination Attachment Error (or,but,so连词等协调词附属错误)
+
+i.
+- **Error type:** Verb Phrase Attachment Error
+- **Incorrect dependency:** wedding$\rightarrow$fearing
+- **Correct dependency:** heading$\rightarrow$fearing
+
+ii. 
+- **Error type:** Coordination Attachment Error
+- **Incorrect dependency:** makes$\rightarrow$rescue
+- **Correct dependency:** rush$\rightarrow$rescue
+  
+iii.
+- **Error type:** Prepositional Phrase Attachment Error
+- **Incorrect dependency:** named$\rightarrow$Midland
+- **Correct dependency:** guy$\rightarrow$Midland
+
+iv.
+- **Error type:** Modifier Attachment Error
+- **Incorrect dependency:** elements$\rightarrow$most
+- **Correct dependency:** crucial$\rightarrow$most

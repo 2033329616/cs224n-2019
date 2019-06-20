@@ -1,5 +1,6 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 在可变对象进行赋值时，得到的只是对象的引用(列表,字典)；在不可变对象进行赋值时是在内存中进行了拷贝(数值，元组，字符串)
+
 """
 CS224N 2018-19: Homework 3
 parser_transitions.py: Algorithms for completing partial parsess.
@@ -7,6 +8,7 @@ Sahil Chopra <schopra8@stanford.edu>
 """
 
 import sys
+from functools import reduce
 
 class PartialParse(object):
     def __init__(self, sentence):
@@ -30,7 +32,9 @@ class PartialParse(object):
         ###
         ### Note: The root token should be represented with the string "ROOT"
         ###
-
+        self.stack = ['ROOT']                 # stack初始时只包括ROOT节点
+        self.buffer = sentence.copy()         # 直接将句子list赋值给buffer，为了不修改原句子，这里使用copy为浅拷贝，不拷贝子对象
+        self.dependencies = []                # (head, dependent)
 
         ### END YOUR CODE
 
@@ -49,7 +53,16 @@ class PartialParse(object):
         ###         1. Shift
         ###         2. Left Arc
         ###         3. Right Arc
-
+        if transition == 'S':                                             # shift operation
+            self.stack.append(self.buffer.pop(0))                         # 将buffer最左边的word取出放到stack的list末尾
+        elif transition == 'LA':
+            self.dependencies.append((self.stack[-1], self.stack[-2]))    # left-arc
+            self.stack.pop(-2)                                            # stack移除dependency word 
+        elif transition == 'RA':
+            self.dependencies.append((self.stack[-2], self.stack[-1]))    # right-arc
+            self.stack.pop(-1)
+        else:
+            raise Exception('Wrong transition!')
 
         ### END YOUR CODE
 
@@ -67,7 +80,7 @@ class PartialParse(object):
         return self.dependencies
 
 
-def minibatch_parse(sentences, model, batch_size):
+def minibatch_parse_v1(sentences, model, batch_size):
     """Parses a list of sentences in minibatches using a model.
 
     @param sentences (list of list of str): A list of sentences to be parsed
@@ -100,7 +113,63 @@ def minibatch_parse(sentences, model, batch_size):
     ###             contains references to the same objects. Thus, you should NOT use the `del` operator
     ###             to remove objects from the `unfinished_parses` list. This will free the underlying memory that
     ###             is being accessed by `partial_parses` and may cause your code to crash.
+    # 这个函数写的有点复杂 version1
+    sentences_num = len(sentences)
+    partial_parses = []
+    for batch in range(sentences_num):
+            partialparse = PartialParse(sentences[batch])
+            partial_parses.append(partialparse)                              # 为每个句子创建一个parser
+        
+    unfinished_parses = partial_parses.copy()                                # 进行浅拷贝
 
+    while unfinished_parses != []:
+        buffer_sign = []
+        stack_sign = 0
+        batch_parses = unfinished_parses[:batch_size]                         # 取batch_size个解析器    
+
+        for i in range(len(batch_parses)):
+            if not (len(batch_parses[i].stack) == 1 and batch_parses[i].buffer == []):   # 没有完成paser的
+                transitions = model.predict([batch_parses[i]])
+            else: 
+                stack_sign += len(batch_parses[i].stack)                       # 这里必须叠加标志位！！！
+                buffer_sign += batch_parses[i].buffer   
+                continue
+            batch_parses[i].parse_step(transitions[0])                         # batch中第i个解析器根据transition进行解析    
+            stack_sign += len(batch_parses[i].stack)                           # 标志位叠加
+            buffer_sign += batch_parses[i].buffer
+
+        if stack_sign == len(batch_parses) and buffer_sign == []:              # 每个parse都完成解析
+            for i in range(len(batch_parses)):
+                dependencies.append(batch_parses[i].dependencies)
+            unfinished_parses = unfinished_parses[batch_size:]                 # 更新未完成的parse 
+
+    ### END YOUR CODE
+
+    return dependencies
+
+def minibatch_parse(sentences, model, batch_size):
+    """上面函数的简化版 version2
+    注意：在使用model.predict时一定要注意，当stack=['root']且buffer=[]时该解析器完成解析，不能再调用
+    该函数，否则出现list索引溢出
+
+    注意：依赖添加的时候需要把
+    """
+    dependencies = []
+
+    ### YOUR CODE HERE (~8-10 Lines) 
+    partial_parses = [PartialParse(sentence) for sentence in sentences]       # 为每个句子创建解析器
+    unfinished_parses = partial_parses.copy()                                 # 进行浅拷贝，类实例共享
+    
+    while unfinished_parses != []:
+        batch_parses = unfinished_parses[:batch_size]                         # 取出batch_size个parser
+        transitions = model.predict(batch_parses)
+        for i in range(len(batch_parses)):
+            batch_parses[i].parse_step(transitions[i])
+            if len(batch_parses[i].stack) == 1 and batch_parses[i].buffer == []:
+                # dependencies.append(batch_parses[i].dependencies)           # !!!注意这里的直接添加没有考虑dependencies的顺序
+                unfinished_parses.remove(batch_parses[i])                     # 将已完成的parser移除
+
+    dependencies = [partial_parse.dependencies for partial_parse in partial_parses]  # !!!在外面添加，否则出错
 
     ### END YOUR CODE
 
@@ -110,7 +179,7 @@ def minibatch_parse(sentences, model, batch_size):
 def test_step(name, transition, stack, buf, deps,
               ex_stack, ex_buf, ex_deps):
     """Tests that a single parse step returns the expected output"""
-    pp = PartialParse([])
+    pp = PartialParse([])                                         # 这里初始化时句子为空[]
     pp.stack, pp.buffer, pp.dependencies = stack, buf, deps
 
     pp.parse_step(transition)
@@ -142,7 +211,7 @@ def test_parse():
     """
     sentence = ["parse", "this", "sentence"]
     dependencies = PartialParse(sentence).parse(["S", "S", "S", "LA", "RA", "RA"])
-    dependencies = tuple(sorted(dependencies))
+    dependencies = tuple(sorted(dependencies))                         # 这里排序为了比较的正确性
     expected = (('ROOT', 'parse'), ('parse', 'sentence'), ('sentence', 'this'))
     assert dependencies == expected,  \
         "parse test resulted in dependencies {:}, expected {:}".format(dependencies, expected)
@@ -156,9 +225,8 @@ class DummyModel(object):
     First shifts everything onto the stack and then does exclusively right arcs if the first word of
     the sentence is "right", "left" if otherwise.
     """
-    def predict(self, partial_parses):
-        return [("RA" if pp.stack[1] is "right" else "LA") if len(pp.buffer) == 0 else "S"
-                for pp in partial_parses]
+    def predict(self, partial_parses):       
+        return [("RA" if pp.stack[1] is "right" else "LA") if len(pp.buffer) == 0 else "S" for pp in partial_parses]    
 
 
 def test_dependencies(name, deps, ex_deps):
@@ -177,6 +245,8 @@ def test_minibatch_parse():
                  ["left", "arcs", "only"],
                  ["left", "arcs", "only", "again"]]
     deps = minibatch_parse(sentences, DummyModel(), 2)
+    print(deps)
+    print('====================')
     test_dependencies("minibatch_parse", deps[0],
                       (('ROOT', 'right'), ('arcs', 'only'), ('right', 'arcs')))
     test_dependencies("minibatch_parse", deps[1],

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 CS224N 2018-19: Homework 3
@@ -46,7 +45,8 @@ def train(parser, train_data, dev_data, output_path, batch_size=1024, n_epochs=1
     ###     Adam Optimizer: https://pytorch.org/docs/stable/optim.html
     ###     Cross Entropy Loss: https://pytorch.org/docs/stable/nn.html#crossentropyloss
 
-
+    optimizer = torch.optim.Adam(parser.model.parameters(), lr=lr)
+    loss_func = nn.CrossEntropyLoss()
     ### END YOUR CODE
 
     for epoch in range(n_epochs):
@@ -55,7 +55,7 @@ def train(parser, train_data, dev_data, output_path, batch_size=1024, n_epochs=1
         if dev_UAS > best_dev_UAS:
             best_dev_UAS = dev_UAS
             print("New best dev UAS! Saving model.")
-            torch.save(parser.model.state_dict(), output_path)
+            torch.save(parser.model.state_dict(), output_path)         # 只存储权重
         print("")
 
 
@@ -77,15 +77,15 @@ def train_for_epoch(parser, train_data, dev_data, optimizer, loss_func, batch_si
     @return dev_UAS (float): Unlabeled Attachment Score (UAS) for dev data
     """
     parser.model.train() # Places model in "train" mode, i.e. apply dropout layer
-    n_minibatches = math.ceil(len(train_data) / batch_size)
+    n_minibatches = math.ceil(len(train_data) / batch_size)                # 向上取整
     loss_meter = AverageMeter()
 
     with tqdm(total=(n_minibatches)) as prog:
         for i, (train_x, train_y) in enumerate(minibatches(train_data, batch_size)):
-            optimizer.zero_grad()   # remove any baggage in the optimizer
-            loss = 0. # store loss for this batch here
+            optimizer.zero_grad()                                          # remove any baggage in the optimizer
+            loss = 0.                                                      # store loss for this batch here
             train_x = torch.from_numpy(train_x).long()
-            train_y = torch.from_numpy(train_y.nonzero()[1]).long()
+            train_y = torch.from_numpy(train_y.nonzero()[1]).long()        # 将非零元素的索引(row,column)，[1]表示把列取出
 
             ### YOUR CODE HERE (~5-10 lines)
             ### TODO:
@@ -99,15 +99,19 @@ def train_for_epoch(parser, train_data, dev_data, optimizer, loss_func, batch_si
             ### Please see the following docs for support:
             ###     Optimizer Step: https://pytorch.org/docs/stable/optim.html#optimizer-step
 
+            logits = parser.model(train_x)        # 前向传播
+            loss = loss_func(logits, train_y)
+            loss.backward()                       # 反向传播
+            optimizer.step()                      # 更新参数
 
             ### END YOUR CODE
             prog.update(1)
-            loss_meter.update(loss.item())
+            loss_meter.update(loss.item())        # 将loss保存
 
     print ("Average Train Loss: {}".format(loss_meter.avg))
 
     print("Evaluating on dev set",)
-    parser.model.eval() # Places model in "eval" mode, i.e. don't apply dropout layer
+    parser.model.eval()                       # Places model in "eval" mode, i.e. don't apply dropout layer
     dev_UAS, _ = parser.parse(dev_data)
     print("- dev UAS: {:.2f}".format(dev_UAS * 100.0))
     return dev_UAS
@@ -115,10 +119,10 @@ def train_for_epoch(parser, train_data, dev_data, optimizer, loss_func, batch_si
 
 if __name__ == "__main__":
     # Note: Set debug to False, when training on entire corpus
-    debug = True
-    # debug = False
+    # debug = True
+    debug = False
 
-    assert(torch.__version__ == "1.0.0"),  "Please install torch version 1.0.0"
+    # assert(torch.__version__ == "1.0.0"),  "Please install torch version 1.0.0"
 
     print(80 * "=")
     print("INITIALIZING")

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 CS224N 2018-19: Homework 3
@@ -47,7 +46,7 @@ class ParserModel(nn.Module):
         self.embed_size = embeddings.shape[1]
         self.hidden_size = hidden_size
         self.pretrained_embeddings = nn.Embedding(embeddings.shape[0], self.embed_size)
-        self.pretrained_embeddings.weight = nn.Parameter(torch.tensor(embeddings))
+        self.pretrained_embeddings.weight = nn.Parameter(torch.tensor(embeddings))   # 初始化嵌入矩阵为参数
 
         ### YOUR CODE HERE (~5 Lines)
         ### TODO:
@@ -71,6 +70,11 @@ class ParserModel(nn.Module):
         ###     Linear Layer: https://pytorch.org/docs/stable/nn.html#torch.nn.Linear
         ###     Xavier Init: https://pytorch.org/docs/stable/nn.html#torch.nn.init.xavier_uniform_
         ###     Dropout: https://pytorch.org/docs/stable/nn.html#torch.nn.Dropout
+        self.embed_to_hidden = nn.Linear(self.embed_size * self.n_features, self.hidden_size)   # (d*m, h)
+        nn.init.xavier_uniform_(self.embed_to_hidden.weight, gain=1)
+        self.dropout = nn.Dropout(self.dropout_prob)                                # dropout_prob是置为0的概率
+        self.hidden_to_logits = nn.Linear(self.hidden_size, self.n_classes)         # (h, n)
+        nn.init.xavier_uniform_(self.hidden_to_logits.weight, gain=1)               # 权重初始化
 
 
         ### END YOUR CODE
@@ -104,7 +108,9 @@ class ParserModel(nn.Module):
         ###     Embedding Layer: https://pytorch.org/docs/stable/nn.html#torch.nn.Embedding
         ###     View: https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view
 
-
+        batch_size = t.size(0)
+        x = self.pretrained_embeddings.weight[t]           # (batch_size, n_features, embedding_size)
+        x = x.view(batch_size, -1)
         ### END YOUR CODE
         return x
 
@@ -141,7 +147,11 @@ class ParserModel(nn.Module):
         ###
         ### Please see the following docs for support:
         ###     ReLU: https://pytorch.org/docs/stable/nn.html?highlight=relu#torch.nn.functional.relu
-
+        embeddings = self.embedding_lookup(t)              # (n, d*m)
+        hidden_in = self.embed_to_hidden(embeddings)
+        hidden_out = F.relu(hidden_in)
+        dropout_h  =  self.dropout(hidden_out)
+        logits = self.hidden_to_logits(dropout_h)
 
         ### END YOUR CODE
         return logits
